@@ -82,7 +82,7 @@ namespace SolidAssist
                 true, false, false,
                 (int)swEndConditions_e.swEndCondBlind,
                 (int)swEndConditions_e.swEndCondBlind,
-                depthM, 0,
+                -depthM, 0,
                 false, false, false, false,
                 0, 0,
                 false, false, false, false,
