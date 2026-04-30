@@ -9,28 +9,36 @@ namespace SolidAssist
         private TextBox txtDiameter;
         private TextBox txtLength;
         private Button btnCreate;
+        private Button btnKeyway;
         private Label lblStatus;
+
+        // Last successfully created shaft (for follow-up features)
+        private double? lastDiameter;
+        private double? lastLength;
 
         public MainForm()
         {
             Text = "SolidAssist — Mil Tasarımı";
-            Size = new Size(360, 220);
+            Size = new Size(380, 260);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
 
             var lblD = new Label { Text = "Çap (mm):", Left = 20, Top = 25, Width = 90 };
-            txtDiameter = new TextBox { Left = 120, Top = 22, Width = 200, Text = "50" };
+            txtDiameter = new TextBox { Left = 120, Top = 22, Width = 220, Text = "50" };
 
             var lblL = new Label { Text = "Uzunluk (mm):", Left = 20, Top = 60, Width = 90 };
-            txtLength = new TextBox { Left = 120, Top = 57, Width = 200, Text = "200" };
+            txtLength = new TextBox { Left = 120, Top = 57, Width = 220, Text = "200" };
 
-            btnCreate = new Button { Text = "Mil Oluştur", Left = 120, Top = 95, Width = 200, Height = 32 };
+            btnCreate = new Button { Text = "Mil Oluştur", Left = 120, Top = 95, Width = 220, Height = 32 };
             btnCreate.Click += BtnCreate_Click;
 
-            lblStatus = new Label { Left = 20, Top = 140, Width = 310, Height = 30, ForeColor = Color.DarkBlue };
+            btnKeyway = new Button { Text = "Kama Kanalı Ekle…", Left = 120, Top = 135, Width = 220, Height = 32, Enabled = false };
+            btnKeyway.Click += BtnKeyway_Click;
 
-            Controls.AddRange(new Control[] { lblD, txtDiameter, lblL, txtLength, btnCreate, lblStatus });
+            lblStatus = new Label { Left = 20, Top = 180, Width = 330, Height = 30, ForeColor = Color.DarkBlue };
+
+            Controls.AddRange(new Control[] { lblD, txtDiameter, lblL, txtLength, btnCreate, btnKeyway, lblStatus });
         }
 
         private void BtnCreate_Click(object sender, EventArgs e)
@@ -49,6 +57,7 @@ namespace SolidAssist
             }
 
             btnCreate.Enabled = false;
+            btnKeyway.Enabled = false;
             lblStatus.ForeColor = Color.DarkBlue;
             lblStatus.Text = "Oluşturuluyor…";
             Application.DoEvents();
@@ -56,6 +65,9 @@ namespace SolidAssist
             try
             {
                 ShaftBuilder.Create(dMm, lMm);
+                lastDiameter = dMm;
+                lastLength = lMm;
+                btnKeyway.Enabled = true;
                 lblStatus.ForeColor = Color.DarkGreen;
                 lblStatus.Text = $"Mil oluşturuldu: Ø{dMm} × {lMm} mm";
             }
@@ -67,6 +79,15 @@ namespace SolidAssist
             finally
             {
                 btnCreate.Enabled = true;
+            }
+        }
+
+        private void BtnKeyway_Click(object sender, EventArgs e)
+        {
+            if (!lastDiameter.HasValue || !lastLength.HasValue) return;
+            using (var f = new KeywayForm(lastDiameter.Value, lastLength.Value))
+            {
+                f.ShowDialog(this);
             }
         }
     }
