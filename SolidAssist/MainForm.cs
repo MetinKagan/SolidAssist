@@ -10,6 +10,7 @@ namespace SolidAssist
         private TextBox txtLength;
         private Button btnCreate;
         private Button btnKeyway;
+        private Button btnThread;
         private Label lblStatus;
 
         // Last successfully created shaft (for follow-up features)
@@ -19,7 +20,7 @@ namespace SolidAssist
         public MainForm()
         {
             Text = "SolidAssist — Mil Tasarımı";
-            Size = new Size(380, 260);
+            Size = new Size(380, 310);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             StartPosition = FormStartPosition.CenterScreen;
@@ -36,9 +37,12 @@ namespace SolidAssist
             btnKeyway = new Button { Text = "Kama Kanalı Ekle…", Left = 120, Top = 135, Width = 220, Height = 32, Enabled = false };
             btnKeyway.Click += BtnKeyway_Click;
 
-            lblStatus = new Label { Left = 20, Top = 180, Width = 330, Height = 30, ForeColor = Color.DarkBlue };
+            btnThread = new Button { Text = "Kılavuz Ekle…", Left = 120, Top = 175, Width = 220, Height = 32, Enabled = false };
+            btnThread.Click += BtnThread_Click;
 
-            Controls.AddRange(new Control[] { lblD, txtDiameter, lblL, txtLength, btnCreate, btnKeyway, lblStatus });
+            lblStatus = new Label { Left = 20, Top = 220, Width = 330, Height = 30, ForeColor = Color.DarkBlue };
+
+            Controls.AddRange(new Control[] { lblD, txtDiameter, lblL, txtLength, btnCreate, btnKeyway, btnThread, lblStatus });
         }
 
         private void BtnCreate_Click(object sender, EventArgs e)
@@ -58,6 +62,7 @@ namespace SolidAssist
 
             btnCreate.Enabled = false;
             btnKeyway.Enabled = false;
+            btnThread.Enabled = false;
             lblStatus.ForeColor = Color.DarkBlue;
             lblStatus.Text = "Oluşturuluyor…";
             Application.DoEvents();
@@ -68,6 +73,7 @@ namespace SolidAssist
                 lastDiameter = dMm;
                 lastLength = lMm;
                 btnKeyway.Enabled = true;
+                btnThread.Enabled = true;
                 lblStatus.ForeColor = Color.DarkGreen;
                 lblStatus.Text = $"Mil oluşturuldu: Ø{dMm} × {lMm} mm";
             }
@@ -86,6 +92,15 @@ namespace SolidAssist
         {
             if (!lastDiameter.HasValue || !lastLength.HasValue) return;
             using (var f = new KeywayForm(lastDiameter.Value, lastLength.Value))
+            {
+                f.ShowDialog(this);
+            }
+        }
+
+        private void BtnThread_Click(object sender, EventArgs e)
+        {
+            if (!lastDiameter.HasValue || !lastLength.HasValue) return;
+            using (var f = new ThreadForm(lastDiameter.Value, lastLength.Value))
             {
                 f.ShowDialog(this);
             }

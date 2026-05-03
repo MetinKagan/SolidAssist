@@ -67,6 +67,11 @@
     <Compile Include="KeywayForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ThreadStandard.cs" />
+    <Compile Include="ThreadBuilder.cs" />
+    <Compile Include="ThreadForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

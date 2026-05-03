@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(gh auth *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://github.com/metinkboduroglu/SolidAssist)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://github.com/metink-boduroglu/SolidAssist)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://github.com/metinkboduroglu)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://github.com/metink-boduroglu)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe\" \"C:/Users/user/Desktop/SolidAssist-main/SolidAssist/SolidAssist.csproj\" -p:Configuration=Debug -v:minimal)",
+      "Read(//c/Program Files/Microsoft Visual Studio/**)",
+      "Read(//c/Program Files \\(x86\\)/Microsoft Visual Studio/**)",
+      "Read(//c/Program Files/**)",
+      "Bash(\"/c/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe\" \"C:/Users/user/Desktop/SolidAssist-main/SolidAssist/SolidAssist.csproj\" -p:Configuration=Debug -v:minimal)",
+      "PowerShell($ws = New-Object -ComObject WScript.Shell; $sc = $ws.CreateShortcut\\(\"$env:USERPROFILE\\\\Desktop\\\\SolidAssist - Kama.lnk\"\\); $sc.TargetPath = \"C:\\\\Users\\\\user\\\\Desktop\\\\SolidAssist-main\\\\SolidAssist\\\\bin\\\\Debug\\\\SolidAssist.exe\"; $sc.WorkingDirectory = \"C:\\\\Users\\\\user\\\\Desktop\\\\SolidAssist-main\\\\SolidAssist\\\\bin\\\\Debug\"; $sc.Description = \"SolidAssist - Kama \\(debug build\\)\"; $sc.Save\\(\\); \"OK\")",
+      "Bash(cd /tmp)",
+      "Bash(cp \"/c/Program Files/SOLIDWORKS Corp/SOLIDWORKS/api/redist/SolidWorks.Interop.swconst.dll\" .)"
     ]
   }
 }

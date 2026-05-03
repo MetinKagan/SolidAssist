@@ -49,6 +49,28 @@ Kişisel PC'de SW API çağrısı çalıştırılamaz — derleme ile doğrula, 
 - `releases/v1_mil/` — sadece mil
 - `releases/v2_kama_test/` — mil + kama test build
 
+## Sketch API gotchas
+
+**CreateLine/CreateArc otomatik birleşmez.** Aynı koordinatla iki segment çizsen bile endpoint'ler yapışık değildir → contour açık → cut "ince unsur" yorumlanır.
+
+Her köşede explicit coincident:
+```csharp
+SketchLine line = (SketchLine)swSketchMgr.CreateLine(...);
+SketchArc arc   = (SketchArc)swSketchMgr.CreateArc(...);
+doc.ClearSelection2(true);
+((SketchPoint)line.GetStartPoint2()).Select4(false, null);
+((SketchPoint)arc.GetStartPoint2()).Select4(true, null);
+doc.SketchAddConstraints("sgCOINCIDENT");
+```
+
+**`SketchSegment`** üzerinde GetStartPoint2 yok. Cast `SketchLine` veya `SketchArc`.
+
+**`FeatureCut4`** bu kurulumda 27 arg. `UseFeatScope=true, UseAutoSelect=true` (pos 19-20) zorunlu.
+
+**`CreateSketchSlot`** enum: `swSketchSlotCreationType_line`, `swSketchSlotLengthType_CenterCenter`. 14. arg `bool AddDimension=true` → otomatik ölçü.
+
+**Sketch reference** — `swSketchMgr.ActiveSketch` ile çıkmadan yakala, isim aramaktan kaçın.
+
 ## Convention
 
 - Yeni feature: yeni Form + yeni Builder static class

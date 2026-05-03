@@ -56,45 +56,80 @@ namespace SolidAssist
             swDoc.ClearSelection2(true);
             refPlane.Select2(false, 0);
             swSketchMgr.InsertSketch(true);
+            Sketch activeSketch = (Sketch)swSketchMgr.ActiveSketch;
+            if (activeSketch == null) throw new InvalidOperationException("Çizim açılamadı.");
 
-            // On offset Top Plane: sketch +Y maps to world -Z, so negate to place slot at the
-            // Z=0 end of the shaft (which extrudes into negative Z by default).
+            // Cylinder extruded along +Z from Front Plane. Sketch on offset Top Plane:
+            // sketch +Y maps to world -Z. Cylinder is along Z axis, so negative Y places slot ON cylinder.
             double y1 = -(edgeM + halfW);
             double y2 = -(edgeM + lengthM - halfW);
 
-            // Two parallel lines along the slot length
-            swSketchMgr.CreateLine(-halfW, y1, 0, -halfW, y2, 0);
-            swSketchMgr.CreateLine( halfW, y1, 0,  halfW, y2, 0);
-            // Two semicircles capping the ends, bulging outward to close the contour.
-            // y1 is the less-negative (near Z=0) end, so its cap bulges toward +Y.
-            // y2 is the more-negative (far) end, so its cap bulges toward -Y.
-            swSketchMgr.CreateArc(0, y1, 0, -halfW, y1, 0,  halfW, y1, 0, -1);
-            swSketchMgr.CreateArc(0, y2, 0,  halfW, y2, 0, -halfW, y2, 0, -1);
+            // Manuel çizim — 2 paralel çizgi + 2 yarım daire
+            SketchLine line1 = (SketchLine)swSketchMgr.CreateLine(-halfW, y1, 0, -halfW, y2, 0);
+            SketchLine line2 = (SketchLine)swSketchMgr.CreateLine( halfW, y1, 0,  halfW, y2, 0);
+            SketchArc  arc1  = (SketchArc)swSketchMgr.CreateArc(0, y1, 0, -halfW, y1, 0,  halfW, y1, 0, -1);
+            SketchArc  arc2  = (SketchArc)swSketchMgr.CreateArc(0, y2, 0,  halfW, y2, 0, -halfW, y2, 0, -1);
 
-            string sketchName = ShaftBuilder.GetLastSketchName(swDoc);
+            // 4 köşeyi explicit coincident yap (line + arc endpoint'leri birleşsin)
+            MakeCoincident(swDoc, line1.GetStartPoint2(), arc1.GetStartPoint2());
+            MakeCoincident(swDoc, line2.GetStartPoint2(), arc1.GetEndPoint2());
+            MakeCoincident(swDoc, line2.GetEndPoint2(),   arc2.GetStartPoint2());
+            MakeCoincident(swDoc, line1.GetEndPoint2(),   arc2.GetEndPoint2());
+
             swSketchMgr.InsertSketch(true);
 
             // 3) Cut-extrude blind with depth = keyway depth
             swDoc.ClearSelection2(true);
-            swDoc.Extension.SelectByID2(sketchName, "SKETCH", 0, 0, 0, false, 0, null, 0);
+            Feature sketchFeat = (Feature)activeSketch;
+            bool selOk = sketchFeat.Select2(false, 0);
+            if (!selOk) throw new InvalidOperationException("Çizim seçilemedi.");
 
-            Feature cut = swFeatMgr.FeatureCut4(
-                true, false, false,
-                (int)swEndConditions_e.swEndCondBlind,
-                (int)swEndConditions_e.swEndCondBlind,
-                -depthM, 0,
-                false, false, false, false,
-                0, 0,
-                false, false, false, false,
-                false, false, false, false,
-                false, false,
-                (int)swStartConditions_e.swStartSketchPlane,
-                0, false, false);
+            Feature cut = TryFeatureCut(swFeatMgr, depthM, false);
+            if (cut == null)
+            {
+                swDoc.ClearSelection2(true);
+                sketchFeat.Select2(false, 0);
+                cut = TryFeatureCut(swFeatMgr, depthM, true);
+            }
 
-            if (cut == null) throw new InvalidOperationException("Kama kanalı kesimi başarısız.");
+            if (cut == null)
+            {
+                throw new InvalidOperationException($"Kama kanalı kesimi başarısız (her iki yön denendi). Sketch: '{sketchFeat.Name}', Depth: {depthM*1000}mm");
+            }
 
             swDoc.ClearSelection2(true);
             swDoc.ViewZoomtofit2();
+        }
+
+        private static void MakeCoincident(IModelDoc2 doc, object p1, object p2)
+        {
+            if (p1 == null || p2 == null) return;
+            doc.ClearSelection2(true);
+            ((SketchPoint)p1).Select4(false, null);
+            ((SketchPoint)p2).Select4(true, null);
+            doc.SketchAddConstraints("sgCOINCIDENT");
+        }
+
+        private static Feature TryFeatureCut(FeatureManager mgr, double depthM, bool reverseDir)
+        {
+            try
+            {
+                return mgr.FeatureCut4(
+                    true, false, reverseDir,
+                    (int)swEndConditions_e.swEndCondBlind,
+                    (int)swEndConditions_e.swEndCondBlind,
+                    depthM, 0,
+                    false, false, false, false,
+                    0, 0,
+                    false, false, false, false,
+                    false, true, true, false, false, false,
+                    (int)swStartConditions_e.swStartSketchPlane,
+                    0, false, false);
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }
